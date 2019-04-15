@@ -9,6 +9,7 @@ from spacetimerl.turn_based_environment import turn_based_environment, TurnBased
 
 State = object
 
+# Match these patterns to win
 WINNING_SHAPES = [
     np.full((3, 1), 1, np.int8),
     np.full((1, 3), 1, np.int8),
@@ -289,8 +290,8 @@ class TicTacToe3PlayerEnv(TurnBasedEnvironment):
                 reward = -1
             winners = [winner]
             terminal = True
-        else:
-            if self.valid_actions(state, player_num) == ['']:
+
+        if self.valid_actions(state=(new_board, winner), player=player_num) == ['']:
                 terminal = True
 
         return (new_board, winner), reward, terminal, winners
