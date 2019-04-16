@@ -22,6 +22,7 @@ PLAYER_NUM_TO_STRING = {
     1: "O",
 }
 
+
 def _relative_player_id(current_player: int, absolute_player_num: np.ndarray) -> np.ndarray:
     return np.where(absolute_player_num < 0, absolute_player_num, (absolute_player_num - current_player) % 2)
 
@@ -214,6 +215,27 @@ class TicTacToe2PlayerEnv(BaseEnvironment):
 
         """
         return dill.loads(serialized_state)
+
+    def current_rewards(self, state: object) -> List[float]:
+        """Returns current reward for each player (in absolute order, not relative to any specific player
+
+        Parameters
+        ----------
+        state : object
+            The current state to calculate rewards from
+
+        Returns
+        -------
+        rewards : List[float]
+            A vector containing the current rewards for each player
+
+        """
+        board, winner = state
+
+        if winner is not None:
+            return [1 if p == winner else -1 for p in range(self.max_players)]
+        else:
+            return [0 for _ in range(self.max_players)]
 
     def next_state(self, state: object, players: List[int], actions: List[str]) \
             -> Tuple[State, List[int], List[float], bool, Union[List[int], None]]:

@@ -59,7 +59,7 @@ def string_to_action(action_str: str) -> Union[Tuple[int, int], None]:
     if action_str == '':
         return None
 
-    index = Tuple[int, int](map(int, action_str.replace('(', '').replace(')', '').split(',')))
+    index = tuple(map(int, action_str.replace('(', '').replace(')', '').split(',')))
     return index
 
 
@@ -216,6 +216,27 @@ class TicTacToe3PlayerEnv(BaseEnvironment):
 
         """
         return dill.loads(serialized_state)
+
+    def current_rewards(self, state: object) -> List[float]:
+        """Returns current reward for each player (in absolute order, not relative to any specific player
+
+        Parameters
+        ----------
+        state : object
+            The current state to calculate rewards from
+
+        Returns
+        -------
+        rewards : List[float]
+            A vector containing the current rewards for each player
+
+        """
+        board, winner = state
+
+        if winner is not None:
+            return [1 if p == winner else -1 for p in range(self.max_players)]
+        else:
+            return [0 for _ in range(self.max_players)]
 
     def next_state(self, state: object, players: List[int], actions: List[str]) \
             -> Tuple[State, List[int], List[float], bool, Union[List[int], None]]:
