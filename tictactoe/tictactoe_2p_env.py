@@ -93,7 +93,7 @@ def print_board(state: object):
                 print('|', end='')
         print('')
         if i+1 < len(board):
-            print('-' * (2*3 + 4))
+            print('-' * (3*3 + 2))
     print("")
 
 
