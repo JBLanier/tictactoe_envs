@@ -4,8 +4,7 @@ import dill
 import numpy as np
 import scipy.signal
 
-from spacetimerl.turn_based_environment import turn_based_environment, TurnBasedEnvironment
-
+from spacetimerl.base_environment import BaseEnvironment
 
 State = object
 
@@ -43,7 +42,7 @@ def action_to_string(index: Tuple[int, int]) -> str:
     return str(index)
 
 
-def string_to_action(action_str: str) -> Tuple[int, int]:
+def string_to_action(action_str: str) -> Union[Tuple[int, int], None]:
     """Convert a formatted action string into an index.
 
     Parameters
@@ -60,7 +59,7 @@ def string_to_action(action_str: str) -> Tuple[int, int]:
     if action_str == '':
         return None
 
-    index = tuple(map(int, action_str.replace('(', '').replace(')', '').split(',')))
+    index = Tuple[int, int](map(int, action_str.replace('(', '').replace(')', '').split(',')))
     return index
 
 
@@ -80,7 +79,6 @@ def print_board(state: object):
     Y marks player 2.
     """
 
-    _, state = state
     board, winner = state
 
     board = board.tolist()
@@ -100,8 +98,8 @@ def print_board(state: object):
             print('-' * (5*3 + 4))
     print("")
 
-@turn_based_environment
-class TicTacToe3PlayerEnv(TurnBasedEnvironment):
+
+class TicTacToe3PlayerEnv(BaseEnvironment):
     r"""
     Full TicTacToe 3Player environment class with access to the actual game state.
     """
@@ -139,9 +137,8 @@ class TicTacToe3PlayerEnv(TurnBasedEnvironment):
 
         return ["board"]
 
-    def new_state(self, num_players: int = 3) -> State:
-        r"""new_state(self) -> object
-        Create a fresh TicTacToe 3Player board state for a new game.
+    def new_state(self, num_players: int = 3) -> Tuple[State, List[int]]:
+        r"""Create a fresh TicTacToe 3Player board state for a new game.
 
         Returns
         -------
@@ -170,7 +167,7 @@ class TicTacToe3PlayerEnv(TurnBasedEnvironment):
 
         winner = None
 
-        return board, winner
+        return (board, winner), [0]
 
     # Serialization Methods
     @staticmethod
@@ -220,12 +217,9 @@ class TicTacToe3PlayerEnv(TurnBasedEnvironment):
         """
         return dill.loads(serialized_state)
 
-    def next_state(self, state: object, player_num: int, action: str) \
-            -> Tuple[State, float, bool, Union[List[int], None]]:
-        """ next_state(self, state: object, players: [int], actions: [str]) \
-            -> Tuple[object, List[int], List[float], bool, Union[List[int], None]]
-
-        Perform a game step from a given state.
+    def next_state(self, state: object, players: List[int], actions: List[str]) \
+            -> Tuple[State, List[int], List[float], bool, Union[List[int], None]]:
+        """Perform a game step from a given state.
 
 
         Parameters
@@ -267,8 +261,10 @@ class TicTacToe3PlayerEnv(TurnBasedEnvironment):
 
         """
         board, winner = state
-
         new_board = board.copy()
+
+        action = actions[0]
+        player_num = players[0]
 
         winners = None
         reward = 0
@@ -294,7 +290,9 @@ class TicTacToe3PlayerEnv(TurnBasedEnvironment):
         if self.valid_actions(state=(new_board, winner), player=player_num) == ['']:
                 terminal = True
 
-        return (new_board, winner), reward, terminal, winners
+        new_player_num = (player_num + 1) % 3
+
+        return (new_board, winner), [player_num], [reward], terminal, winners
 
     def valid_actions(self, state: object, player: int) -> List[str]:
         """ Valid actions for a specific state and player.
