@@ -20,11 +20,10 @@ PLAYER_NUM_TO_STRING = {
     -1: " ",
     0: "X",
     1: "O",
-    2: "Y"
 }
 
 def _relative_player_id(current_player: int, absolute_player_num: np.ndarray) -> np.ndarray:
-    return np.where(absolute_player_num < 0, absolute_player_num, (absolute_player_num - current_player) % 3)
+    return np.where(absolute_player_num < 0, absolute_player_num, (absolute_player_num - current_player) % 2)
 
 
 def action_to_string(index: Tuple[int, int]) -> str:
@@ -59,7 +58,7 @@ def string_to_action(action_str: str) -> Union[Tuple[int, int], None]:
     if action_str == '':
         return None
 
-    index = Tuple[int, int](map(int, action_str.replace('(', '').replace(')', '').split(',')))
+    index = tuple(map(int, action_str.replace('(', '').replace(')', '').split(',')))
     return index
 
 
@@ -76,7 +75,6 @@ def print_board(state: object):
     -----
     X marks player 0.
     O marks player 1.
-    Y marks player 2.
     """
 
     board, winner = state
@@ -95,36 +93,36 @@ def print_board(state: object):
                 print('|', end='')
         print('')
         if i+1 < len(board):
-            print('-' * (5*3 + 4))
+            print('-' * (2*3 + 4))
     print("")
 
 
-class TicTacToe3PlayerEnv(BaseEnvironment):
+class TicTacToe2PlayerEnv(BaseEnvironment):
     r"""
-    Full TicTacToe 3Player environment class with access to the actual game state.
+    Full TicTacToe 2Player environment class with access to the actual game state.
     """
 
     @property
     def min_players(self) -> int:
         r""" Property holding the number of players present required to play the game.
 
-        (Always 3)
+        (Always 2)
         """
-        return 3
+        return 2
 
     @property
     def max_players(self) -> int:
         r""" Property holding the max number of players present for a game.
 
-        (Always 3)
+        (Always 2)
         """
-        return 3
+        return 2
 
     @property
     def observation_shape(self) -> Dict[str, Tuple[int, ...]]:
         """ Property holding the numpy array shapes for each value in an observation dictionary."""
 
-        return {"board": (3, 5)}
+        return {"board": (3, 3)}
 
     @staticmethod
     def observation_names():
@@ -137,8 +135,8 @@ class TicTacToe3PlayerEnv(BaseEnvironment):
 
         return ["board"]
 
-    def new_state(self, num_players: int = 3) -> Tuple[State, List[int]]:
-        r"""Create a fresh TicTacToe 3Player board state for a new game.
+    def new_state(self, num_players: int = 2) -> Tuple[State, List[int]]:
+        r"""Create a fresh TicTacToe 2Player board state for a new game.
 
         Returns
         -------
@@ -159,11 +157,11 @@ class TicTacToe3PlayerEnv(BaseEnvironment):
 
         """
         if num_players is None:
-            num_players = 3
+            num_players = 2
 
-        assert num_players == 3
+        assert num_players == 2
 
-        board = np.full((3, 5), -1, np.int8)
+        board = np.full((3, 3), -1, np.int8)
 
         winner = None
 
@@ -290,7 +288,7 @@ class TicTacToe3PlayerEnv(BaseEnvironment):
         if self.valid_actions(state=(new_board, winner), player=player_num) == ['']:
                 terminal = True
 
-        new_player_num = (player_num + 1) % 3
+        new_player_num = (player_num + 1) % 2
 
         return (new_board, winner), [new_player_num], [reward], terminal, winners
 
